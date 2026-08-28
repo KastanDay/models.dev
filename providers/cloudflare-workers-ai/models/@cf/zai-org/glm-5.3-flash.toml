@@ -1,9 +1,6 @@
 # Context/output capped to Cloudflare Workers AI context window (1,048,576).
 # Catalog/search previously reported 1,310,720, which exceeds AI Gateway max_completion_tokens.
 # https://developers.cloudflare.com/workers-ai/models/glm-5.3-flash/
-# Workers AI always enables reasoning; reasoning_effort selects low|high|max and defaults to max.
-# The compatibility value medium normalizes to max.
-# https://docs.z.ai/guides/llm/glm-5.3-flash
 name = "Glm 5.3 Flash"
 description = "GLM vision model for visual reasoning, documents, and multimodal agents"
 family = "glm"
