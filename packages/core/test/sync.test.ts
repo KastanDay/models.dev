@@ -11,6 +11,7 @@ import {
   type AnthropicModel,
 } from "../src/sync/providers/anthropic.js";
 import { buildCortecsModel, cortecs, type CortecsModel } from "../src/sync/providers/cortecs.js";
+import { cloudflareWorkersAi } from "../src/sync/providers/cloudflare-workers-ai.js";
 import {
   buildCrossModel,
   CrossModelResponse,
@@ -2914,6 +2915,37 @@ test("syncs OpenRouter reasoning efforts from model metadata", () => {
       { type: "effort", values: ["max", "xhigh", "high", "medium", "low"] },
     ],
   });
+});
+
+test("syncs Workers AI reasoning efforts from schema metadata", () => {
+  const [source] = cloudflareWorkersAi.parseModels({
+    data: [{
+      id: "@cf/zai-org/glm-5.3",
+      name: "Z.ai: GLM 5.3",
+      created: 1_788_048_000,
+      hugging_face_id: "zai-org/GLM-5.3",
+      context_length: 202_752,
+      max_output_length: 131_072,
+      pricing: { prompt: "0.0000005", completion: "0.0000022" },
+      supported_features: ["reasoning"],
+      supported_sampling_parameters: ["temperature"],
+      reasoning: {
+        mandatory: false,
+        supported_efforts: ["low", "high", "max"],
+      },
+    }],
+  });
+  const translated = cloudflareWorkersAi.translateModel(source!, {
+    existing: () => ({
+      reasoning_options: [{ type: "effort", values: ["medium"] }],
+    }),
+    authored: () => undefined,
+  });
+
+  expect(translated.model.reasoning_options).toEqual([
+    { type: "toggle" },
+    { type: "effort", values: ["low", "high", "max"] },
+  ]);
 });
 
 test("syncs OpenRouter toggles without an effort selector", () => {
