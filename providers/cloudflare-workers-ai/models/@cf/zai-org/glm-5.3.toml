@@ -1,4 +1,5 @@
-# GLM-5.3 always reasons; reasoning_effort selects low|high|max and defaults to max.
+# Workers AI always enables reasoning; reasoning_effort selects low|high|max and defaults to max.
+# The compatibility value medium normalizes to max.
 # https://docs.z.ai/guides/llm/glm-5.3
 base_model = "zhipuai/glm-5.3"
 name = "Glm 5.3"
