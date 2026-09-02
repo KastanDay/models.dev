@@ -9,7 +9,7 @@ temperature = true
 tool_call = true
 structured_output = true
 open_weights = true
-reasoning_options = [{ type = "effort", values = ["low", "high", "max"] }]
+reasoning_options = [{ type = "effort", values = ["max", "high", "low"] }]
 
 [cost]
 input = 0.15

@@ -2931,7 +2931,7 @@ test("syncs Workers AI reasoning efforts from schema metadata", () => {
       supported_sampling_parameters: ["temperature"],
       reasoning: {
         mandatory: true,
-        supported_efforts: ["low", "high", "max"],
+        supported_efforts: ["max", "high", "low"],
       },
     }],
   });
@@ -2943,7 +2943,7 @@ test("syncs Workers AI reasoning efforts from schema metadata", () => {
   });
 
   expect(translated.model.reasoning_options).toEqual([
-    { type: "effort", values: ["low", "high", "max"] },
+    { type: "effort", values: ["max", "high", "low"] },
   ]);
 });
 
