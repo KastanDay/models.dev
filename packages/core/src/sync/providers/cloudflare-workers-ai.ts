@@ -50,6 +50,7 @@ const CloudflareModel = z.object({
   }),
   supported_features: z.array(z.string()).optional(),
   supported_sampling_parameters: z.array(z.string()).optional(),
+  reasoning: OpenRouterModel.shape.reasoning,
 }).passthrough();
 
 const CloudflareResponse = z.object({
@@ -108,14 +109,11 @@ export function buildWorkersAiModel(
       max_completion_tokens: existing?.limit?.output ?? model.top_provider.max_completion_tokens,
     },
   };
-  const synced = {
-    ...buildOpenRouterModel(
-      source,
-      existing,
-      existing?.base_model ?? resolveCloudflareBaseModel(model),
-    ),
-    reasoning_options: existing?.reasoning_options,
-  };
+  const synced = buildOpenRouterModel(
+    source,
+    existing,
+    existing?.base_model ?? resolveCloudflareBaseModel(model),
+  );
   if ("base_model" in synced) return synced;
   return {
     ...synced,
@@ -214,6 +212,7 @@ function normalizeModel(model: CloudflareModel) {
       ...model.supported_sampling_parameters ?? [],
       ...model.supported_features ?? [],
     ],
+    reasoning: model.reasoning,
   });
 }
 
