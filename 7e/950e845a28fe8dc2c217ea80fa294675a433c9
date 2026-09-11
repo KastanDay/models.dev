@@ -1,0 +1,25 @@
+packages/core/src/schema.ts
+  s_33a9535a16ca21::t_772ba2078b75c0 32-39,51-52
+packages/core/src/sync/index.ts
+  s_33a9535a16ca21::t_651daace045376 1021
+packages/core/src/sync/providers/openrouter.ts
+  s_33a9535a16ca21::t_0e82d8fb9c59de 5,93-94,336-337,340-341
+packages/core/test/sync.test.ts
+  s_33a9535a16ca21::t_730d4c43a31382 14,3121-3145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7e950e845a28fe8dc2c217ea80fa294675a433c9",
+  "prompts": {},
+  "sessions": {
+    "s_33a9535a16ca21": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0920b-b16c-7691-acf2-9b5d1aa73bee",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Kastan Day <kastanvday@gmail.com>"
+    }
+  }
+}
