@@ -11,7 +11,6 @@ import {
   type AnthropicModel,
 } from "../src/sync/providers/anthropic.js";
 import { buildCortecsModel, cortecs, type CortecsModel } from "../src/sync/providers/cortecs.js";
-import { ReasoningOption } from "../src/schema.js";
 import { cloudflareWorkersAi } from "../src/sync/providers/cloudflare-workers-ai.js";
 import {
   buildCrossModel,
@@ -3116,31 +3115,6 @@ test("syncs Workers AI reasoning efforts from schema metadata", () => {
   expect(translated.model.reasoning_options).toEqual([
     { type: "effort", values: ["max", "high", "low"] },
   ]);
-});
-
-test.each([
-  { effort_range: { type: "integer", minimum: 0, maximum: 100 }, default_effort: 0 },
-  { effort_range: { type: "number", minimum: 0, maximum: 1 }, default_effort: 0.25 },
-  { effort_range: { type: "integer", enum: [10, 20, 30] }, default_effort: 30 },
-])("preserves Workers AI numeric reasoning controls through parsing, translation, and TOML: %j", (metadata) => {
-  const [source] = cloudflareWorkersAi.parseModels({ data: [{
-    id: "@cf/test/numeric-reasoning",
-    name: "Numeric reasoning",
-    created: 1_788_048_000,
-    hugging_face_id: "test/numeric-reasoning",
-    context_length: 8192,
-    max_output_length: 4096,
-    pricing: { prompt: "0.000001", completion: "0.000002" },
-    supported_features: ["reasoning"],
-    supported_sampling_parameters: [],
-    reasoning: { mandatory: true, ...metadata },
-  }] });
-  const translated = cloudflareWorkersAi.translateModel(source!, { existing: () => undefined, authored: () => undefined });
-  const expected = ReasoningOption.parse({ type: "effort", values: [], ...metadata });
-  expect(translated.model.reasoning_options).toEqual([expected]);
-  const toml = formatToml({ id: "numeric-reasoning", ...translated.model });
-  const parsed = Bun.TOML.parse(toml) as Record<string, unknown>;
-  expect((parsed.reasoning_options as unknown[]).map((option) => ReasoningOption.parse(option))).toEqual([expected]);
 });
 
 test("preserves custom named efforts and OpenRouter defaults", () => {

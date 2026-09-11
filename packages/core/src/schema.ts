@@ -29,14 +29,6 @@ const ReasoningEffortValue = z.preprocess(
   ]),
 );
 
-// Provider extension using JSON Schema numeric vocabulary.
-export const EffortRange = z.object({
-  type: z.enum(["integer", "number"]),
-  minimum: z.number().finite().optional(),
-  maximum: z.number().finite().optional(),
-  enum: z.array(z.number().finite()).min(1).optional(),
-}).strict();
-
 export const ReasoningOption = z
   .discriminatedUnion("type", [
     z
@@ -48,8 +40,7 @@ export const ReasoningOption = z
       .object({
         type: z.literal("effort"),
         values: z.array(ReasoningEffortValue),
-        effort_range: EffortRange.optional(),
-        default_effort: z.union([z.string(), z.number().finite()]).optional(),
+        default_effort: z.string().optional(),
       })
       .strict(),
     z

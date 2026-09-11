@@ -2,7 +2,6 @@ import { z } from "zod";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-import { EffortRange } from "../../schema.js";
 import { describeModel } from "../../describe.js";
 import { inferKimiFamily, ModelFamilyValues } from "../../family.js";
 import type { ExistingModel, SyncProvider, SyncedFullModel, SyncedModel } from "../index.js";
@@ -90,8 +89,7 @@ export const OpenRouterModel = z.object({
         .nullable()
         .optional(),
       supports_max_tokens: z.boolean().optional(),
-      default_effort: z.union([z.string(), z.number().finite()]).optional(),
-      effort_range: EffortRange.optional(),
+      default_effort: z.string().optional(),
     })
     .passthrough()
     .optional(),
@@ -333,12 +331,10 @@ function openRouterReasoningOptions(reasoning: OpenRouterModel["reasoning"]): Sy
     options.push({ type: "toggle" });
   }
 
-  if (efforts !== undefined || reasoning.effort_range !== undefined) {
-    const values = efforts ?? [];
+  if (efforts !== undefined) {
     options.push({
       type: "effort",
-      values: reasoning.mandatory ? values.filter((value) => value !== "none") : [...values],
-      ...(reasoning.effort_range === undefined ? {} : { effort_range: reasoning.effort_range }),
+      values: reasoning.mandatory ? efforts.filter((value) => value !== "none") : [...efforts],
       ...(reasoning.default_effort === undefined ? {} : { default_effort: reasoning.default_effort }),
     });
   }
