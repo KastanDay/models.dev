@@ -1018,6 +1018,7 @@ export function formatToml(model: z.infer<typeof SyncedAuthoredModel>) {
     if (option.type === "effort") {
       const values = sortReasoningValues(option.values).map(formatReasoningValue).join(", ");
       lines.push(`values = [${values}]`);
+      if (option.effort_range !== undefined) lines.push(`effort_range = ${formatInlineValue(option.effort_range)}`);
       if (option.default_effort !== undefined) lines.push(`default_effort = ${formatInlineValue(option.default_effort)}`);
     }
     if (option.type === "budget_tokens") {
