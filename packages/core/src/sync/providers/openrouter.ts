@@ -83,12 +83,13 @@ export const OpenRouterModel = z.object({
   supported_parameters: z.array(z.string()),
   reasoning: z
     .object({
-      mandatory: z.boolean(),
+      mandatory: z.boolean().optional(),
       supported_efforts: z
-        .array(z.enum(["max", "xhigh", "high", "medium", "low", "minimal", "none"]))
+        .array(z.string())
         .nullable()
         .optional(),
       supports_max_tokens: z.boolean().optional(),
+      default_effort: z.string().optional(),
     })
     .passthrough()
     .optional(),
@@ -334,6 +335,7 @@ function openRouterReasoningOptions(reasoning: OpenRouterModel["reasoning"]): Sy
     options.push({
       type: "effort",
       values: reasoning.mandatory ? efforts.filter((value) => value !== "none") : [...efforts],
+      ...(reasoning.default_effort === undefined ? {} : { default_effort: reasoning.default_effort }),
     });
   }
 

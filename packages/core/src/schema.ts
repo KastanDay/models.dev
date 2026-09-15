@@ -25,7 +25,7 @@ const ReasoningEffortValue = z.preprocess(
   (value) => (value === "null" ? null : value),
   z.union([
     z.null(),
-    z.enum(["none", "minimal", "low", "medium", "high", "xhigh", "max", "default"]),
+    z.string().min(1),
   ]),
 );
 
@@ -40,6 +40,7 @@ export const ReasoningOption = z
       .object({
         type: z.literal("effort"),
         values: z.array(ReasoningEffortValue),
+        default_effort: z.string().optional(),
       })
       .strict(),
     z
