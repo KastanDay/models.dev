@@ -1,0 +1,19 @@
+providers/cloudflare-workers-ai/models/@cf/zai-org/glm-5.2.toml
+  s_7c67876c36f40b::t_f67f85c04e8f28 8-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "885db77eb072802cc6c5457cd928caa2a8443264",
+  "prompts": {},
+  "sessions": {
+    "s_7c67876c36f40b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b17b-4fbe-73b1-926e-341be525d87f",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Kastan Day <kastanvday@gmail.com>"
+    }
+  }
+}
