@@ -3087,7 +3087,7 @@ test("syncs OpenRouter reasoning efforts from model metadata", () => {
   });
 });
 
-test("syncs Workers AI reasoning efforts from schema metadata", () => {
+test("syncs non-empty Workers AI reasoning metadata for existing and new models", () => {
   const [source] = cloudflareWorkersAi.parseModels({
     data: [{
       id: "@cf/zai-org/glm-5.3",
@@ -3100,27 +3100,76 @@ test("syncs Workers AI reasoning efforts from schema metadata", () => {
       supported_features: ["reasoning"],
       supported_sampling_parameters: ["temperature"],
       reasoning: {
-        mandatory: true,
-        supported_efforts: ["max", "high", "low"],
+        mandatory: false,
+        supported_efforts: ["max", "high", "none"],
+        default_effort: "max",
+        default_enabled: true,
+        normalizes_to: { low: "high" },
       },
     }],
   });
-  const translated = cloudflareWorkersAi.translateModel(source!, {
+  const existing = cloudflareWorkersAi.translateModel(source!, {
     existing: () => ({
       reasoning_options: [{ type: "effort", values: ["medium"] }],
     }),
     authored: () => undefined,
   });
+  const created = cloudflareWorkersAi.translateModel(source!, {
+    existing: () => undefined,
+    authored: () => undefined,
+  });
 
-  expect(translated.model.reasoning_options).toEqual([
-    { type: "effort", values: ["max", "high", "low"] },
+  expect(existing.model.reasoning_options).toEqual([
+    { type: "effort", values: ["max", "high", "none"], default_effort: "max" },
   ]);
+  expect(created.model.reasoning_options).toEqual(existing.model.reasoning_options);
 });
 
-test("preserves custom named efforts and OpenRouter defaults", () => {
-  const source = openRouterModel({ reasoning: { mandatory: true, supported_efforts: ["custom-effort", "high"], default_effort: "custom-effort" } });
-  const translated = openrouter.translateModel(source, { existing: () => undefined, authored: () => undefined });
-  expect(translated?.model.reasoning_options).toEqual([{ type: "effort", values: ["custom-effort", "high"], default_effort: "custom-effort" }]);
+test("preserves Workers AI reasoning options when search metadata is empty or missing", () => {
+  const existing = [{ type: "effort" as const, values: ["medium"] }];
+  for (const reasoning of [undefined, {}, { supported_efforts: [] }]) {
+    const [source] = cloudflareWorkersAi.parseModels({
+      data: [{
+        id: "@cf/zai-org/glm-5.3",
+        name: "Z.ai: GLM 5.3",
+        created: 1_788_048_000,
+        context_length: 202_752,
+        pricing: { prompt: "0.0000005", completion: "0.0000022" },
+        supported_features: ["reasoning"],
+        reasoning,
+      }],
+    });
+    const translated = cloudflareWorkersAi.translateModel(source!, {
+      existing: () => ({ reasoning_options: existing }),
+      authored: () => undefined,
+    });
+    expect(translated.model.reasoning_options).toEqual(existing);
+  }
+});
+
+test("ignores failed Workers AI search responses and retains missing catalogue models", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalAccount = process.env.CLOUDFLARE_WORKERS_AI_SYNC_ACCOUNT_ID;
+  const originalToken = process.env.CLOUDFLARE_WORKERS_AI_SYNC_API_TOKEN;
+  process.env.CLOUDFLARE_WORKERS_AI_SYNC_ACCOUNT_ID = "test-account";
+  process.env.CLOUDFLARE_WORKERS_AI_SYNC_API_TOKEN = "test-token";
+  let requested: URL | undefined;
+  globalThis.fetch = async (input) => {
+    requested = new URL(String(input));
+    return new Response("unavailable", { status: 503, statusText: "Service Unavailable" });
+  };
+
+  try {
+    expect(await cloudflareWorkersAi.fetchModels()).toEqual({ data: [] });
+    expect(requested?.searchParams.get("format")).toBe("openrouter");
+    expect(cloudflareWorkersAi.deleteMissing).toBe(false);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalAccount === undefined) delete process.env.CLOUDFLARE_WORKERS_AI_SYNC_ACCOUNT_ID;
+    else process.env.CLOUDFLARE_WORKERS_AI_SYNC_ACCOUNT_ID = originalAccount;
+    if (originalToken === undefined) delete process.env.CLOUDFLARE_WORKERS_AI_SYNC_API_TOKEN;
+    else process.env.CLOUDFLARE_WORKERS_AI_SYNC_API_TOKEN = originalToken;
+  }
 });
 
 test("syncs OpenRouter toggles without an effort selector", () => {

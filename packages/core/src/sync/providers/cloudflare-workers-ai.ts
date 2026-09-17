@@ -6,7 +6,6 @@ import type { ExistingModel, SyncedModel, SyncProvider } from "../index.js";
 import {
   buildOpenRouterModel,
   OpenRouterModel,
-  OpenRouterResponse,
 } from "./openrouter.js";
 
 const API_BASE = "https://api.cloudflare.com/client/v4/accounts";
@@ -24,13 +23,12 @@ const METADATA_PUBLISHERS: Record<string, string> = {
   "zai-org": "zhipuai",
 };
 
-const CloudflareOpenRouterResponse = z.object({
-  result: z.union([OpenRouterResponse, z.array(OpenRouterModel)]).optional(),
-  result_info: z.object({
-    page: z.number().optional(),
-    total_pages: z.number().optional(),
-  }).passthrough().optional(),
-}).passthrough();
+const CloudflareReasoning = z.object({
+  mandatory: z.boolean().optional(),
+  supported_efforts: z.array(z.string()).nullable().optional(),
+  supports_max_tokens: z.boolean().optional(),
+  default_effort: z.string().optional(),
+}).passthrough().optional();
 
 const CloudflareModel = z.object({
   id: z.string(),
@@ -50,11 +48,19 @@ const CloudflareModel = z.object({
   }),
   supported_features: z.array(z.string()).optional(),
   supported_sampling_parameters: z.array(z.string()).optional(),
-  reasoning: OpenRouterModel.shape.reasoning,
+  reasoning: CloudflareReasoning,
 }).passthrough();
 
 const CloudflareResponse = z.object({
   data: z.array(CloudflareModel),
+}).passthrough();
+
+const CloudflareOpenRouterResponse = z.object({
+  result: z.union([CloudflareResponse, z.array(CloudflareModel)]).optional(),
+  result_info: z.object({
+    page: z.number().optional(),
+    total_pages: z.number().optional(),
+  }).passthrough().optional(),
 }).passthrough();
 
 type CloudflareModel = z.infer<typeof CloudflareModel>;
@@ -63,6 +69,7 @@ export const cloudflareWorkersAi = {
   id: "cloudflare-workers-ai",
   name: "Cloudflare Workers AI",
   modelsDir: "providers/cloudflare-workers-ai/models",
+  deleteMissing: false,
   async fetchModels() {
     const accountID = process.env.CLOUDFLARE_WORKERS_AI_SYNC_ACCOUNT_ID;
     const token = process.env.CLOUDFLARE_WORKERS_AI_SYNC_API_TOKEN;
@@ -73,13 +80,15 @@ export const cloudflareWorkersAi = {
     }
 
     const first = await fetchPage(accountID, token, 1);
+    if (first === undefined) return { data: [] };
     const models = parseCloudflareModels(first);
     const pageInfo = CloudflareOpenRouterResponse.safeParse(first).success
       ? CloudflareOpenRouterResponse.parse(first).result_info
       : undefined;
 
     for (let page = 2; page <= (pageInfo?.total_pages ?? 1); page++) {
-      models.push(...parseCloudflareModels(await fetchPage(accountID, token, page)));
+      const response = await fetchPage(accountID, token, page);
+      if (response !== undefined) models.push(...parseCloudflareModels(response));
     }
 
     return { data: models };
@@ -88,11 +97,15 @@ export const cloudflareWorkersAi = {
     return parseCloudflareModels(raw);
   },
   translateModel(model, context) {
-    const normalized = normalizeModel(model);
+    const { normalized, reasoning } = normalizeModel(model);
     const id = normalized.id.replace(/^workers-ai\//, "");
     return {
       id,
-      model: buildWorkersAiModel(normalized, context.existing(id)),
+      model: buildWorkersAiModel(
+        normalized,
+        context.existing(id),
+        cloudflareReasoningOptions(reasoning),
+      ),
     };
   },
 } satisfies SyncProvider<CloudflareModel>;
@@ -100,6 +113,7 @@ export const cloudflareWorkersAi = {
 export function buildWorkersAiModel(
   model: z.infer<typeof OpenRouterModel>,
   existing: ExistingModel | undefined,
+  reasoningOptions?: ExistingModel["reasoning_options"],
 ): SyncedModel {
   const source = {
     ...model,
@@ -109,11 +123,14 @@ export function buildWorkersAiModel(
       max_completion_tokens: existing?.limit?.output ?? model.top_provider.max_completion_tokens,
     },
   };
-  const synced = buildOpenRouterModel(
-    source,
-    existing,
-    existing?.base_model ?? resolveCloudflareBaseModel(model),
-  );
+  const synced = {
+    ...buildOpenRouterModel(
+      source,
+      existing,
+      existing?.base_model ?? resolveCloudflareBaseModel(model),
+    ),
+    ...(reasoningOptions?.length ? { reasoning_options: reasoningOptions } : {}),
+  };
   if ("base_model" in synced) return synced;
   return {
     ...synced,
@@ -161,23 +178,28 @@ async function fetchPage(accountID: string, token: string, page: number) {
   url.searchParams.set("per_page", "1000");
   url.searchParams.set("page", String(page));
 
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!response.ok) {
-    throw new Error(
-      `Cloudflare Workers AI models request failed: ${response.status} ${response.statusText}${await responseDetails(response)}`,
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      console.warn(
+        `Ignoring Cloudflare Workers AI models response: ${response.status} ${response.statusText}${await responseDetails(response)}`,
+      );
+      return undefined;
+    }
+    return response.json();
+  } catch (error) {
+    console.warn(
+      `Ignoring failed Cloudflare Workers AI models request: ${error instanceof Error ? error.message : String(error)}`,
     );
+    return undefined;
   }
-  return response.json();
 }
 
 function parseCloudflareModels(raw: unknown): CloudflareModel[] {
   const cloudflare = CloudflareResponse.safeParse(raw);
   if (cloudflare.success) return cloudflare.data.data;
-
-  const direct = OpenRouterResponse.safeParse(raw);
-  if (direct.success) return direct.data.data.map((model) => CloudflareModel.parse(model));
 
   const wrapped = CloudflareOpenRouterResponse.parse(raw);
   if (wrapped.result === undefined) {
@@ -189,31 +211,68 @@ function parseCloudflareModels(raw: unknown): CloudflareModel[] {
 
 function normalizeModel(model: CloudflareModel) {
   if ("architecture" in model && "top_provider" in model && "supported_parameters" in model) {
-    return OpenRouterModel.parse(model);
+    return {
+      normalized: OpenRouterModel.parse({ ...model, reasoning: undefined }),
+      reasoning: model.reasoning,
+    };
   }
 
-  return OpenRouterModel.parse({
-    id: model.id.startsWith("@cf/") ? model.id : `@cf/${model.id.replace(/^@cf\//, "")}`,
-    name: model.name,
-    created: model.created,
-    hugging_face_id: model.hugging_face_id ?? null,
-    knowledge_cutoff: null,
-    context_length: model.context_length,
-    architecture: {
-      input_modalities: model.input_modalities ?? ["text"],
-      output_modalities: model.output_modalities ?? ["text"],
-    },
-    pricing: model.pricing,
-    top_provider: {
+  return {
+    normalized: OpenRouterModel.parse({
+      id: model.id.startsWith("@cf/") ? model.id : `@cf/${model.id.replace(/^@cf\//, "")}`,
+      name: model.name,
+      created: model.created,
+      hugging_face_id: model.hugging_face_id ?? null,
+      knowledge_cutoff: null,
       context_length: model.context_length,
-      max_completion_tokens: model.max_output_length ?? null,
-    },
-    supported_parameters: [
-      ...model.supported_sampling_parameters ?? [],
-      ...model.supported_features ?? [],
-    ],
+      architecture: {
+        input_modalities: model.input_modalities ?? ["text"],
+        output_modalities: model.output_modalities ?? ["text"],
+      },
+      pricing: model.pricing,
+      top_provider: {
+        context_length: model.context_length,
+        max_completion_tokens: model.max_output_length ?? null,
+      },
+      supported_parameters: [
+        ...model.supported_sampling_parameters ?? [],
+        ...model.supported_features ?? [],
+      ],
+    }),
     reasoning: model.reasoning,
-  });
+  };
+}
+
+function cloudflareReasoningOptions(
+  reasoning: z.infer<typeof CloudflareReasoning>,
+): ExistingModel["reasoning_options"] {
+  if (reasoning === undefined) return undefined;
+
+  const options: NonNullable<ExistingModel["reasoning_options"]> = [];
+  const efforts = reasoning.supported_efforts ?? undefined;
+
+  if (reasoning.mandatory === false && !efforts?.includes("none")) {
+    options.push({ type: "toggle" });
+  }
+
+  const selectableEfforts = reasoning.mandatory === true
+    ? efforts?.filter((value) => value !== "none")
+    : efforts;
+  if (selectableEfforts?.length) {
+    options.push({
+      type: "effort",
+      values: selectableEfforts,
+      ...(reasoning.default_effort === undefined
+        ? {}
+        : { default_effort: reasoning.default_effort }),
+    });
+  }
+
+  if (reasoning.supports_max_tokens === true) {
+    options.push({ type: "budget_tokens" });
+  }
+
+  return options.length > 0 ? options : undefined;
 }
 
 async function responseDetails(response: Response) {
