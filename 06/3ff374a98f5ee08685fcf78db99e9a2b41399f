@@ -1,0 +1,20 @@
+packages/core/src/sync/providers/cloudflare-workers-ai.ts
+  s_6c3d070a6f8a7f::t_056be72e7ffc39 30-31,33-36,38-39,46-47,51-70,78-79,90-94,97,100-102,105-114,117-119,122-132,135,138-141,144-148,155-163,177-202,236-251,255-269,273-286,289-290,309
+  s_6c3d070a6f8a7f::t_7919b95cc65887 29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "063ff374a98f5ee08685fcf78db99e9a2b41399f",
+  "prompts": {},
+  "sessions": {
+    "s_6c3d070a6f8a7f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b5a6-79f5-7351-8d26-cfd7a1ebfbd3",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Kastan Day <kastanvday@gmail.com>"
+    }
+  }
+}
