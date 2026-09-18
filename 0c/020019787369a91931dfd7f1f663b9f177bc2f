@@ -1,0 +1,31 @@
+providers/cloudflare-workers-ai/models/@cf/google/gemma-4-26b-a4b-it.toml
+  s_6c3d070a6f8a7f::t_c29a18bad36d63 7-10
+providers/cloudflare-workers-ai/models/@cf/moonshotai/kimi-k2.6.toml
+  s_6c3d070a6f8a7f::t_becb5667bb7177 5-8
+providers/cloudflare-workers-ai/models/@cf/moonshotai/kimi-k2.7-code.toml
+  s_6c3d070a6f8a7f::t_c14217127b41a5 6-9
+providers/cloudflare-workers-ai/models/@cf/nvidia/nemotron-3-120b-a12b.toml
+  s_6c3d070a6f8a7f::t_6c4bb8a1fccbf2 10-16
+providers/cloudflare-workers-ai/models/@cf/qwen/qwen3.8-27b.toml
+  s_6c3d070a6f8a7f::t_ec4eb1adf6e527 8-14
+providers/cloudflare-workers-ai/models/@cf/zai-org/glm-5.3-flash.toml
+  s_6c3d070a6f8a7f::t_c9d7c79813ab00 6-9
+providers/cloudflare-workers-ai/models/@cf/zai-org/glm-5.3.toml
+  s_6c3d070a6f8a7f::t_323e69d4f59c55 6-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0c020019787369a91931dfd7f1f663b9f177bc2f",
+  "prompts": {},
+  "sessions": {
+    "s_6c3d070a6f8a7f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b5a6-79f5-7351-8d26-cfd7a1ebfbd3",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Kastan Day <kastanvday@gmail.com>"
+    }
+  }
+}
