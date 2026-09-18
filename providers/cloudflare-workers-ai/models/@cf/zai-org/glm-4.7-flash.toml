@@ -1,5 +1,7 @@
 # Toggle: chat_template_kwargs.enable_thinking = true|false (default: true).
 # Source: Workers AI /ai/models/search?format=openrouter (2026-09-18).
+# Workers AI's per-model config exposes only the binary thinking toggle;
+# the generic sync-input.json low/medium/high enum is not an effort selector here.
 base_model = "zhipuai/glm-4.7-flash"
 description = "Efficient GLM model for fast reasoning, coding, and agent workflows"
 structured_output = true
