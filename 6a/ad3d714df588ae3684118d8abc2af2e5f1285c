@@ -1,0 +1,25 @@
+packages/core/src/sync/providers/cloudflare-workers-ai.ts
+  s_6c3d070a6f8a7f::t_056be72e7ffc39 9-10,29-31,33-36,38-39,46-47,51-66,74,85,87-89,95-97,100-105,108,111-115,121-124,127-130,137-141,189-204,208-223,227-240,244,263
+packages/core/src/sync/providers/openrouter.ts
+  s_6c3d070a6f8a7f::t_bde9dfc0f62139 54-59,90,317,325,329,340
+packages/core/test/cloudflare-workers-ai.test.ts
+  s_6c3d070a6f8a7f::t_8fb554db5ee5ea 1-183
+sync.md
+  s_6c3d070a6f8a7f::t_65916302bc60ea 216-219
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "6aad3d714df588ae3684118d8abc2af2e5f1285c",
+  "prompts": {},
+  "sessions": {
+    "s_6c3d070a6f8a7f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b5a6-79f5-7351-8d26-cfd7a1ebfbd3",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Kastan Day <kastanvday@gmail.com>"
+    }
+  }
+}
