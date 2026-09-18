@@ -1,5 +1,7 @@
+# Effort: reasoning_effort = high; thinking is mandatory.
+# Source: Workers AI /ai/models/search?format=openrouter (2026-09-18).
 base_model = "moonshotai/kimi-k2.7-code"
-reasoning_options = [{ type = "toggle" }, { type = "effort", values = ["low", "medium", "high"] }]
+reasoning_options = [{ type = "effort", values = ["high"] }]
 temperature = true
 
 [cost]
