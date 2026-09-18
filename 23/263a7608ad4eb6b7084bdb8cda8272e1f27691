@@ -1,0 +1,19 @@
+packages/core/src/sync/providers/openrouter.ts
+  s_6c3d070a6f8a7f::t_1e69ebd8671fce 84-94,321,329,333,336,344
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "23263a7608ad4eb6b7084bdb8cda8272e1f27691",
+  "prompts": {},
+  "sessions": {
+    "s_6c3d070a6f8a7f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b5a6-79f5-7351-8d26-cfd7a1ebfbd3",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Kastan Day <kastanvday@gmail.com>"
+    }
+  }
+}
