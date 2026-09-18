@@ -3,7 +3,10 @@
 base_model = "zhipuai/glm-5.3-flash"
 name = "Glm 5.3 Flash"
 description = "GLM vision model for visual reasoning, documents, and multimodal agents"
-reasoning_options = [{ type = "effort", values = ["low", "high", "max"] }]
+
+[[reasoning_options]]
+type = "effort"
+values = ["low", "high", "max"]
 
 [cost]
 input = 0.15

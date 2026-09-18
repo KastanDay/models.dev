@@ -2,7 +2,10 @@
 # Source: Workers AI /ai/models/search?format=openrouter (2026-09-18).
 
 base_model = "moonshotai/kimi-k2.6"
-reasoning_options = [{ type = "effort", values = ["none", "high"] }]
+
+[[reasoning_options]]
+type = "effort"
+values = ["none", "high"]
 
 [interleaved]
 field = "reasoning_content"
