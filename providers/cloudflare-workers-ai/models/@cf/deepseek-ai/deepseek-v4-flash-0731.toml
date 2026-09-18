@@ -1,5 +1,7 @@
 # Effort: reasoning_effort = none|low|high|max; none disables thinking.
 # Source: Workers AI /ai/models/search?format=openrouter (2026-09-18).
+# Context/output capped to Cloudflare Workers AI context window (1,048,576).
+# Search reports 1,310,720, exceeding AI Gateway max_completion_tokens.
 base_model = "deepseek/deepseek-v4-flash-0731"
 
 [[reasoning_options]]
@@ -12,5 +14,5 @@ output = 1.32
 cache_read = 0.014
 
 [limit]
-context = 1_310_720
+context = 1_048_576
 output = 1_048_576
