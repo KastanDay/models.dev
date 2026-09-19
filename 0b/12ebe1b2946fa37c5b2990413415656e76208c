@@ -1,0 +1,21 @@
+providers/cloudflare-workers-ai/models/@cf/deepseek-ai/deepseek-v4-flash-0731.toml
+  s_6c3d070a6f8a7f::t_f1afcc6891b8bd 5-6
+providers/cloudflare-workers-ai/models/@cf/deepseek-ai/deepseek-v4-pro-0813.toml
+  s_6c3d070a6f8a7f::t_0bb83dd6366103 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0b12ebe1b2946fa37c5b2990413415656e76208c",
+  "prompts": {},
+  "sessions": {
+    "s_6c3d070a6f8a7f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b5a6-79f5-7351-8d26-cfd7a1ebfbd3",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Kastan Day <kastanvday@gmail.com>"
+    }
+  }
+}
