@@ -1,11 +1,8 @@
-# Effort: reasoning_effort = high; thinking is mandatory.
+# Thinking is mandatory; high is the only effective effort, so aliases add no caller control.
 # Source: Workers AI /ai/models/search?format=openrouter (2026-09-18).
 base_model = "moonshotai/kimi-k2.7-code"
 temperature = true
-
-[[reasoning_options]]
-type = "effort"
-values = ["high"]
+reasoning_options = []
 
 [cost]
 input = 0.95
